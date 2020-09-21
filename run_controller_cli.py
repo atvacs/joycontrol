@@ -307,7 +307,6 @@ def _register_commands_with_controller_state(controller_state, cli):
     async def mash(*args):
         """
         mash - Mash a specified button at a set interval
-
         Usage:
             mash <button> <interval>
         """
@@ -323,10 +322,8 @@ def _register_commands_with_controller_state(controller_state, cli):
     async def hold(*args):
         """
         hold - Press and hold specified buttons
-
         Usage:
             hold <button>
-
         Example:
             hold a b
         """
@@ -345,10 +342,8 @@ def _register_commands_with_controller_state(controller_state, cli):
     async def release(*args):
         """
         release - Release specified buttons
-
         Usage:
             release <button>
-
         Example:
             release a b
         """
@@ -367,7 +362,6 @@ def _register_commands_with_controller_state(controller_state, cli):
     async def nfc(*args):
         """
         nfc - Sets nfc content
-
         Usage:
             nfc <file_name>          Set controller state NFC content to file
             nfc remove               Remove NFC content from controller state
