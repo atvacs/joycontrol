@@ -150,7 +150,7 @@ async def pokemon_grind_watts_sequence(controller_state: ControllerState):
     await ainput(prompt='Make sure the player is in front of an active den, the glitch is active and clock sync is off,  then press <enter> to continue.')
 
     user_input = asyncio.ensure_future(
-        ainput(prompt='Pressing all buttons... Press <enter> to stop.')
+        ainput(prompt='Grinding Watts... Press <enter> to stop.')
     )
 
     while not user_input.done():
