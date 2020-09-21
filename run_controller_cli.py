@@ -247,27 +247,17 @@ async def pokemon_grind_watts_sequence(controller_state: ControllerState):
         for _ in range(4):
             await button_push(controller_state, 'b')
             await asyncio.sleep(0.3)
-
-
-    # push all buttons except home and capture
-    # button_list = controller_state.button_state.get_available_buttons()
-    # if 'capture' in button_list:
-    #     button_list.remove('capture')
-    # if 'home' in button_list:
-    #     button_list.remove('home')
-
-    # user_input = asyncio.ensure_future(
-    #     ainput(prompt='Pressing all buttons... Press <enter> to stop.')
-    # )
-
-    # push all buttons consecutively until user input
-    # while not user_input.done():
-    #     for button in button_list:
-    #         await button_push(controller_state, button)
-    #         await asyncio.sleep(0.1)
-
-            # if user_input.done():
-            #     break
+        if user_input.done():
+            break
+        await asyncio.sleep(1)
+        if user_input.done():
+            break
+        for _ in range(4):
+            await button_push(controller_state, 'b')
+            await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+        await asyncio.sleep(0.7)
 
     # await future to trigger exceptions in case something went wrong
     await user_input
