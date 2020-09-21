@@ -1,6 +1,8 @@
 # joycontrol
 Emulate Nintendo Switch Controllers over Bluetooth.
 
+Differences from the main fork: added macro specifically to farm Watt on Pokemon Sword and Shield.
+
 Tested on Ubuntu 19.10, and with Raspberry Pi 3B+ and 4B Raspbian GNU/Linux 10 (buster)
 
 ## Features
@@ -10,21 +12,48 @@ Emulation of JOYCON_R, JOYCON_L and PRO_CONTROLLER. Able to send:
 - ~~nfc data~~ (removed, see [#80](https://github.com/mart1nro/joycontrol/issues/80))
 
 ## Installation
-- Install dependencies
-
-Ubuntu: Install the `dbus-python` and `libhidapi-hidraw0` packages
-```bash
-sudo apt install python3-dbus libhidapi-hidraw0
-```
-
 Arch Linux Derivatives: Install the `hidapi` and `bluez-utils-compat`(AUR) packages
 
+On Ubuntu/Raspbian:
+```bash
+sudo apt install python3 python3-pip python3-dbus libhidapi-hidraw0
+```
 
-- Clone the repository and install the joycontrol package to get missing dependencies (Note: Controller script needs super user rights, so python packages must be installed as root). In the joycontrol folder run:
+```bash
+git clone https://github.com/atvacs/joycontrol.git
+```
+
+```bash
+cd joycontrol
+```
+(Note: Controller script needs super user rights, so python packages must be installed as root)
 ```bash
 sudo pip3 install .
 ```
-- Consider to disable the bluez "input" plugin, see [#8](https://github.com/mart1nro/joycontrol/issues/8)
+
+If you don't need to connect anything else to the device, disable the bluez "input" plugin, see [#8](https://github.com/mart1nro/joycontrol/issues/8). To do that, access the file `/lib/systemd/system/bluetooth.service`
+```bash
+sudo nano /lib/systemd/system/bluetooth.service
+```
+And change the following line
+```
+ExecStart=/usr/lib/bluetooth/bluetoothd
+```
+to
+```
+ExecStart=/usr/lib/bluetooth/bluetoothd --noplugin=input
+```
+and restart Bluetooth with
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart bluetooth
+```
+
+When you run the script, you will probably get errors saying that a certain module can't be found. If so, just type the following command, replacing "MODULE_NAME" with the actual name of the module that is missing:
+```bash
+sudo pip3 install MODULE_NAME
+```
 
 ## Command line interface example
 - Run the script
@@ -38,7 +67,7 @@ This will create a PRO_CONTROLLER instance waiting for the Switch to connect.
 The Switch only pairs with new controllers in the "Change Grip/Order" menu.
 
 Note: If you already connected an emulated controller once, you can use the reconnect option of the script (-r "\<Switch Bluetooth Mac address>").
-This does not require the "Change Grip/Order" menu to be opened. You can find out a paired mac address using the "bluetoothctl" system command.
+This does not require the "Change Grip/Order" menu to be opened. You can find out the Bluetooth MAC address of your Switch by looking at the first lines that are printed after connecting. 
 
 - After connecting, a command line interface is opened. Note: Press \<enter> if you don't see a prompt.
 
