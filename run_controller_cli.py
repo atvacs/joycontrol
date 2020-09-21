@@ -164,12 +164,9 @@ async def pokemon_grind_watts_sequence(controller_state: ControllerState):
         await button_push(controller_state, 'down', sec=1)
         if user_input.done():
             break
-        await button_push(controller_state, 'right', sec=2)
-        await asyncio.sleep(0.3)
-        if user_input.done():
-            break
-        await button_push(controller_state, 'left')
-        await asyncio.sleep(0.3)
+        for _ in range(4):
+            await button_push(controller_state, 'right')
+            await asyncio.sleep(0.3)
         if user_input.done():
             break
         await button_push(controller_state, 'a')
