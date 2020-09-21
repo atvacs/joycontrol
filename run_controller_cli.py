@@ -136,6 +136,143 @@ async def test_controller_buttons(controller_state: ControllerState):
     await button_push(controller_state, 'home')
 
 
+async def pokemon_grind_watts_sequence(controller_state: ControllerState):
+    """
+    Pokémon Sword and Shield Watts farming script.
+    From a "grinding ready state" (glitch active, in front of a den), increments the day
+    """
+    if controller_state.get_controller() != Controller.PRO_CONTROLLER:
+        raise ValueError('This script only works with the Pro Controller!')
+
+    # waits until controller is fully connected
+    await controller_state.connect()
+
+    await ainput(prompt='Make sure the player is in front of an active den, the glitch is active and clock sync is off,  then press <enter> to continue.')
+
+    user_input = asyncio.ensure_future(
+        ainput(prompt='Pressing all buttons... Press <enter> to stop.')
+    )
+
+    while not user_input.done():
+        # We assume we are in the game
+        await button_push(controller_state, 'home')
+        await asyncio.sleep(1)
+        if user_input.done():
+            break
+
+        # Goto settings
+        await button_push(controller_state, 'down', sec=1)
+        if user_input.done():
+            break
+        await button_push(controller_state, 'right', sec=2)
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+        await button_push(controller_state, 'left')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # go all the way down
+        await button_push(controller_state, 'down', sec=4)
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # goto "Sytem" menu
+        await button_push(controller_state, 'right')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # goto Date and Time
+        for _ in range(4):
+            await button_push(controller_state, 'down')
+            await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # goto "Date and Time" menu
+        for _ in range(2):
+            await button_push(controller_state, 'down')
+            await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # increment day
+        await button_push(controller_state, 'up')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # go all the way right and confirm change
+        await button_push(controller_state, 'right', sec=1)
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # go back Home
+        await button_push(controller_state, 'home')
+        await asyncio.sleep(1)
+        if user_input.done():
+            break
+
+        # enter the game
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(1)
+        if user_input.done():
+            break
+
+        # interact with the den and take Watts, then exit the den
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+        for _ in range(4):
+            await button_push(controller_state, 'b')
+            await asyncio.sleep(0.3)
+
+
+    # push all buttons except home and capture
+    # button_list = controller_state.button_state.get_available_buttons()
+    # if 'capture' in button_list:
+    #     button_list.remove('capture')
+    # if 'home' in button_list:
+    #     button_list.remove('home')
+
+    # user_input = asyncio.ensure_future(
+    #     ainput(prompt='Pressing all buttons... Press <enter> to stop.')
+    # )
+
+    # push all buttons consecutively until user input
+    # while not user_input.done():
+    #     for button in button_list:
+    #         await button_push(controller_state, button)
+    #         await asyncio.sleep(0.1)
+
+            # if user_input.done():
+            #     break
+
+    # await future to trigger exceptions in case something went wrong
+    await user_input
+
+
 def ensure_valid_button(controller_state, *buttons):
     """
     Raise ValueError if any of the given buttons os not part of the controller state.
@@ -263,6 +400,15 @@ def _register_commands_with_controller_state(controller_state, cli):
                 controller_state.set_nfc(content)
 
     cli.add_command(nfc.__name__, nfc)
+
+    # Pokémon Sword macro for farming Watts
+    async def pkmn_grind_watts():
+        """
+        pkmn_grind_watts - Farms watts. Need to be in front of a den, with the time glitch already active
+        """
+        await pokemon_grind_watts_sequence(controller_state)
+
+    cli.add_command(pkmn_grind_watts.__name__, pkmn_grind_watts)
 
 
 async def _main(args):
