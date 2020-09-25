@@ -10,7 +10,7 @@ from aioconsole import ainput
 from joycontrol import logging_default as log, utils
 from joycontrol.command_line_interface import ControllerCLI
 from joycontrol.controller import Controller
-from joycontrol.controller_state import ControllerState, button_push, button_press, button_release
+from joycontrol.controller_state import ControllerState, button_push, button_press, button_release, stick_set
 from joycontrol.memory import FlashMemory
 from joycontrol.protocol import controller_protocol_factory
 from joycontrol.server import create_hid_server
@@ -259,6 +259,107 @@ async def pokemon_grind_watts_sequence(controller_state: ControllerState):
     # await future to trigger exceptions in case something went wrong
     await user_input
 
+async def botw_grind_arrows_sequence(controller_state: ControllerState):
+    """
+    Zelda BotW arrows farming script.
+    """
+    if controller_state.get_controller() != Controller.PRO_CONTROLLER:
+        raise ValueError('This script only works with the Pro Controller!')
+
+    # waits until controller is fully connected
+    await controller_state.connect()
+
+    await ainput(prompt='Normal camera speed, no gyro, press <enter> to continue.')
+
+    user_input = asyncio.ensure_future(
+        ainput(prompt='Farming arrows... Press <enter> to stop.')
+    )
+
+    while not user_input.done():
+        # Center camera 
+        await button_push(controller_state, 'zl')
+        await asyncio.sleep(0.5)
+        if user_input.done():
+            break
+
+        # Activate magnesys
+        await button_push(controller_state, 'l')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # Move camera to the chest
+        await stick_set(controller_state, 'r', 'down')
+        await asyncio.sleep(0.2)
+        await stick_set(controller_state, 'r', 'center')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # Take chest
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(1)
+        if user_input.done():
+            break
+
+        # Move chest up
+        await stick_set(controller_state, 'r', 'up')
+        await asyncio.sleep(0.3)
+        await stick_set(controller_state, 'r', 'center')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # Move chest towards link
+        await button_push(controller_state, 'down', sec=2)
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # Drop chest
+        await button_push(controller_state, 'b')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        # Open chest and confirm dialog
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(5)
+        if user_input.done():
+            break
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(0.7)
+        if user_input.done():
+            break
+
+        # Open map and teleport to medalion
+        await button_push(controller_state, 'minus')
+        await asyncio.sleep(0.3)
+        if user_input.done():
+            break
+
+        await stick_set(controller_state, 'l', 'h', 700)
+        await asyncio.sleep(0.05)
+        await stick_set(controller_state, 'l', 'center')
+        if user_input.done():
+            break
+
+        await button_push(controller_state, 'a')
+        await asyncio.sleep(0.5)
+        if user_input.done():
+            break
+        await button_push(controller_state, 'a')
+        if user_input.done():
+            break
+
+        for _ in range (40):
+            await asyncio.sleep(0.5)
+            if user_input.done():
+                break
+
+
+    # await future to trigger exceptions in case something went wrong
+    await user_input
 
 def ensure_valid_button(controller_state, *buttons):
     """
@@ -390,6 +491,15 @@ def _register_commands_with_controller_state(controller_state, cli):
         await pokemon_grind_watts_sequence(controller_state)
 
     cli.add_command(pkmn_grind_watts.__name__, pkmn_grind_watts)
+
+    # Zelda BotW macro for farming arrows
+    async def botw_grind_arrows():
+        """
+        botw_grind_arrows - Farms arrows in the pond of Eventide Island
+        """
+        await botw_grind_arrows_sequence(controller_state)
+
+    cli.add_command(botw_grind_arrows.__name__, botw_grind_arrows)
 
 
 async def _main(args):

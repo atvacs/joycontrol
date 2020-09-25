@@ -378,3 +378,43 @@ class StickState:
         byte_3 = self._v_stick >> 4
         assert all(0 <= byte <= 0xFF for byte in (byte_1, byte_2, byte_3))
         return bytes((byte_1, byte_2, byte_3))
+
+async def stick_set(controller_state, sel, direction, value=None):
+    stick = None
+    if sel in ('l', 'left'):
+        stick = controller_state.l_stick_state
+    elif sel in ('r', 'right'):
+        stick = controller_state.r_stick_state
+    else:
+        raise ValueError(f'Unexpected stick selection')
+
+    if direction == 'center':
+        stick.set_center()
+    elif direction == 'up':
+        stick.set_up()
+    elif direction == 'down':
+        stick.set_down()
+    elif direction == 'left':
+        stick.set_left()
+    elif direction == 'right':
+        stick.set_right()
+    elif direction in ('h', 'horizontal'):
+        if value is None:
+            raise ValueError(f'Missing value')
+        try:
+            val = int(value)
+        except ValueError:
+            raise ValueError(f'Unexpected stick value "{value}"')
+        stick.set_h(val)
+    elif direction in ('v', 'vertical'):
+        if value is None:
+            raise ValueError(f'Missing value')
+        try:
+            val = int(value)
+        except ValueError:
+            raise ValueError(f'Unexpected stick value "{value}"')
+        stick.set_v(val)
+    else:
+        raise ValueError(f'Unexpected argument "{direction}"')
+
+    # await controller_state.send()
